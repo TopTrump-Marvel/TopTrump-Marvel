@@ -19,6 +19,10 @@ public class TopTrumpsCLIApplication {
 	static boolean log = false;
 	static FileOutputStream fos = null;
 	static int pernum;
+	static Map <Integer, String> players=new HashMap<Integer, String>();
+	static int isai=0;
+	static int end = 0;
+	static List commonCards = new ArrayList();
 
 	/**
 	 * This main method is called by TopTrumps.java when the user specifies that they want to run in
@@ -104,7 +108,81 @@ public class TopTrumpsCLIApplication {
 				}
 			}
 		}
+	}
 
+	public static int showChoose(Scanner sc, int nowround){
+		int choose = 1;
+		if(nowround==0){
+			print("It is your turn to select a category, the categories are:");
+			for(int i=1;i<attrs.length;i++){
+				print(" "+i+": "+attrs[i]);
+			}
+			System.out.print("Enter the number for your attribute: ");
+			choose = sc.nextInt();
+		}else{
+			String[] data = arrs.get(cards[nowround].get(0));
+			int max = 0;
+			choose = 1;
+			for(int i=1;i<data.length;i++){
+				if(Integer.parseInt(data[i])>=max){
+					max = Integer.parseInt(data[i]);
+					choose=i;
+				}
+			}
+		}
+		choose = choose>attrs.length? 1:choose;
+		return choose;
+	}
+	public static int getWinner(int choose){
+		int winner = 666;
+		int max = 0;
+		int token=0;
+		for(int i=0;i<players.size();i++){
+			if(cards[i].size()>0){
+				String[] data = arrs.get(cards[i].get(0));
+				int value = Integer.parseInt(data[choose]);
+
+				if(value == max){
+					winner = 666;
+					isai = i>0? 1:0;
+				}
+				if(value > max){
+					winner = i;
+					max = value;
+				}
+				token++;
+			}
+		}
+		end = token ==1? 1:0;
+		return winner;
+	}
+
+	public static int getrand(){
+		int rand = 0;
+		List alive = new ArrayList();
+		for(int i=0;i<players.size();i++){
+			if(cards[i].size()>0){
+				alive.add(i);
+			}
+		}
+		Collections.shuffle(alive);
+		Collections.shuffle(alive);
+		rand = (Integer)alive.get(0);
+		return rand;
+	}
+
+	public static void commonLog(FileOutputStream fos) throws IOException{
+		StringBuffer aBuffer = new StringBuffer("");
+		for(int i=0;i<commonCards.size();i++){
+			aBuffer.append(arrs.get(commonCards.get(i))[0]+" ");
+			if(i%4==0){
+				aBuffer.append("\r\n");
+			}
+		}
+		byte[] bytesArray = aBuffer.toString().getBytes();
+		fos.write(bytesArray);
+		fos.write("\r\n------------\r\n".getBytes());
+		fos.flush();
 	}
 
 	public static void main(String[] args) {
