@@ -1,10 +1,7 @@
 package commandline;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 
 /**
  * Top Trumps command line application
@@ -14,6 +11,15 @@ public class TopTrumpsCLIApplication {
 
 	static Map<Integer,String[]> arrs=new HashMap<Integer,String[]>();
 	static String attrs[];
+	static int num = 0;
+	static int aiplayers = 4;
+	static int allplayer = aiplayers+1;
+	static List indexes = new ArrayList();
+	static ArrayList[] cards = new ArrayList[allplayer];
+	static boolean log = false;
+	static FileOutputStream fos = null;
+	static int pernum;
+
 	/**
 	 * This main method is called by TopTrumps.java when the user specifies that they want to run in
 	 * command line mode. The contents of args[0] is whether we should write game logs to a file.
@@ -54,6 +60,51 @@ public class TopTrumpsCLIApplication {
 	}
 	public static void print(String str){
 		System.out.println(str);
+	}
+
+	public static void shuffle() throws IOException {
+
+		for(int a=0;a<num;a++){
+			indexes.add(a);
+		}
+
+		for (int i = 0; i < allplayer; i++) {
+			cards[i] = new ArrayList<Integer>();
+		}
+		Collections.shuffle(indexes);
+		Collections.shuffle(indexes);
+
+		if(log){
+			fos.write("Shuffled cards\r\n".getBytes());
+			StringBuffer aBuffer = new StringBuffer("");
+			for(int i =0; i<indexes.size();i++){
+				aBuffer.append(arrs.get(indexes.get(i))[0]+" ");
+				if(i>0 && i%4==0){
+					aBuffer.append("\r\n");
+				}
+			}
+			byte[] bytesArray = aBuffer.toString().getBytes();
+			fos.write(bytesArray);
+			fos.write("\r\n----------\r\n".getBytes());
+		}
+		for(int i=0;i<allplayer;i++){
+			for(int j=0;j<pernum;j++){
+				int a;
+				try{
+					a = (Integer) indexes.get(1);
+				}catch(Exception e){
+					a = (Integer) indexes.get(0);
+				}
+				cards[i].add(a);
+				//System.out.println(a);
+				try{
+					indexes.remove(1);
+				}catch(Exception e){
+					indexes.remove(0);
+				}
+			}
+		}
+
 	}
 
 	public static void main(String[] args) {
