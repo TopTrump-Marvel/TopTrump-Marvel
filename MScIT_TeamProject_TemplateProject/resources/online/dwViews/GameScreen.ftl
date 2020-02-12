@@ -23,20 +23,201 @@
     <body onload="initalize()"> <!-- Call the initalize method when the page loads -->
     	
     	<div class="container">
+			<div class = "navs">
+				<div class = "container">
+					<div class = "nav-header">
+						<span class = "nav-brand" style="color: #ffffff">Top Trumps Game</span>
 
-			<!-- Add your HTML Here -->
-		
+		</div>
+				</div>
+			</div>
+			<div class="alert alert-info" role="alert" id="title">
+				Loading...
+			</div>
+			<div class="mb"></div>
+			<div class="row hide" id="op2">
+				<a class="btn btn-success" onclick="round();">NEXT ROUND</a>
+			</div>
+			<div class="row" id="op1">
+				<div class="col-md-4">
+					<div class="alert alert-info" role="alert" id="top">
+						Loading...
+					</div>
+					<div id="btm"></div>
+					<div class="mb"></div>
+					<div class="alert alert-info" style="display:none;" role="alert" id="small">
+						Loading...
+					</div>
+				</div>
+				<div class="col-md-8">
+					<div id="rgt" class="row">
+					</div>
+				</div>
+			</div>
 		</div>
 		
 		<script type="text/javascript">
-		
+			var loaded = 0;
+			/*<div class="card" style="width: 18rem;">
+              <img src="http://lib.application.pub/public/pic/" class="card-img-top" alt="...">
+              <div class="card-body">
+                <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+              </div>
+            </div>*/
+			var aiplayers = 0;
+			var players = [];
+			var cate = [];
+			var roundnum;
+
+			function loadcate(){
+
+				$.get('http://localhost:7777/toptrumps/game/attr',function(res){
+					cate = res;
+				})
+			}
+
+			function loadgame(){
+				roundnum = 0;
+				$.get('http://localhost:7777/toptrumps/game/new',function(res){
+					loaded = 1;
+					cate = res;
+					round();
+				})
+			}
+			function genplayers(){
+				players[0]='You';
+				for(i=0;i<aiplayers;i++){
+					players[i+1]='AI Player '+(i+1);
+				}
+			}
+			function selection(active){
+				str='';
+				if(active==0){
+					for(i=0;i<cate.length;i++){
+						str += '<button type="button" class="btn btn-success btn-lg btn-block" onclick="choose('+(i+1)+')">'+cate[i]+'</button>';
+					}
+					$('#title').html('"Waiting on you to select a category"');
+					$('#btm').html(str);
+				}else{
+					choose(0);
+
+				}
+			}
+			function showcard(player,color,left,data){
+				data = data.split('#');
+				str='';
+				//console.log(data);
+				for(i=0;i<cate.length;i++){
+					str=str+'<p class="card-text">'+cate[i]+' , '+data[i+1]+'</p>';
+				}
+				all = '<div class="card col-md-3" style=""> \
+                <button type="button" class="btn btn-'+color+' btn-lg btn-block">'+player+'</button>\
+                <p class="card-text" style="margin:0;padding:0.5rem">'+data[0]+'<span class="badge badge-primary" style="top: -0.1rem;position: relative;">'+(left>40?40:left)+'</span></p>\
+              <img src="http://lib.application.pub/public/pic/'+data[0]+'.jpg" class="card-img-top" alt="" style="height:5rem"> \
+              <div class="card-body"> '+str+'\
+              </div></div>';
+				return all;
+
+			}
+			function showwinner(winner,common){
+				$('#op2').show();
+				$('#op1').hide();
+				if(winner=='draw'){
+					$('#title').html('"Round '+roundnum+': This round was a Draw, common pile now has '+common+' cards"');
+				}else{
+					$('#title').html('"Round '+roundnum+': Player '+players[winner]+' won this round"');
+				}
+			}
+			function choose(select){
+				select = select;
+				$.ajax({
+					type:'post',
+					dataType:'json',
+					contentType:'application/json',
+					url:"http://localhost:7777/toptrumps/game/round?cate="+select,
+					data:JSON.stringify({Word:'qaqaa'}),
+					success: function(data){
+						//alert(data);
+						str = '';
+						playercards = JSON.parse(data.playercards);console.log(aiplayers);
+						for(ij=0;ij<=aiplayers;){
+							i=ij;
+							console.log(data['player'+i]);console.log(data.status==i);
+							if(typeof(data['player'+i])!='undefined' && data['player'+i]!='#####'){
+								str = str+showcard(players[i],data.status==i?'success':'warning',playercards[i],data['player'+i]);
+							}
+							ij++;
+						}
+						$('#rgt').html(str);
+
+						if(data.lose=='1'){
+							$('#small').show();
+							$('#small').html('You have Lost!');
+						}
+						if(data.end=='1'){
+							showwinner(data.status,data.common);
+							$('#op2').hide();
+							$('#op1').show();
+							//$('#title').html('You have Lost!');
+							$.get('http://localhost:7777/toptrumps/game/score',function(res){
+								strs = '';
+
+								for(ii=0;ii<players.length;ii++){
+									if(ii==data.status){
+										strs += '<p style="background-color: #fff;padding: 10px;border-radius: 5px;">The winner was '+players[i]+', they';
+									}else{
+										strs += '<p style="background-color: #fff;padding: 10px;border-radius: 5px;">'+players[i]+' lost overlall, but';
+									}
+									strs += ' won '+res[ii]+' rounds</p>';
+								}
+								$('#btm').html('<button type="button" class="btn btn-success btn-lg btn-block" onclick="window.location=\'/toptrumps/\'">RETURN TO THE SELECT SCREEN</button>'+strs);
+							},'json');
+							//'They selected "'+cate[data.choose-1]+'"</p>';
+						}else{
+							$('#btm').html('<p style="background-color: #fff;padding: 10px;border-radius: 5px;">They selected "'+cate[data.choose-1]+'"</p><button type="button" class="btn btn-success btn-lg btn-block" onclick="showwinner(\''+data.status+'\','+data.common+');">SHOW WINNER</button>');
+						}
+					}
+				});
+			}
+			function round(){
+				$('#op1').show();
+				$('#op2').hide();
+				$.get('http://localhost:7777/toptrumps/game/round',function(res){
+					if(res.round==1){
+						aiplayers = res.aiplayers;
+						genplayers();
+					}
+					if(res.nowcard!='####'){
+						str = showcard('You','success',res.havecard,res.nowcardname+'#'+res.nowcard);
+					}
+					roundnum = res.round;
+					$('#title').show();
+					$('#title').text('"Round '+res.round+': Players have drawn their cards"');
+
+					$('#top').text('The active player is '+players[res.nowround]);
+					$('#btm').html('<button type="button" class="btn btn-success btn-lg btn-block" onclick="selection('+res.nowround+');">NEXT:CATEGORY SELECTION</button>');
+					$('#rgt').html(str);
+				},'json')
+
+			}
+			function shownextbtn(){
+
+				$('#op2').show();
+				$('#op1').hide();
+			}
+
+
 			// Method that is called on page load
 			function initalize() {
 			
 				// --------------------------------------------------------------------------
 				// You can call other methods you want to run when the page first loads here
 				// --------------------------------------------------------------------------
-				
+				loadgame();
+				if(loaded!=1){
+
+				}else{
+				}
 				// For example, lets call our sample methods
 				helloJSONList();
 				helloWord("Student");
