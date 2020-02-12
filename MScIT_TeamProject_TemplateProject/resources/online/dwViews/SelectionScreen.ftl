@@ -2,7 +2,7 @@
 
 	<head>
 		<!-- Web page title -->
-    	<title>Top Trumps</title>
+		<title>SelectionScreen - Top Trumps</title>
     	
     	<!-- Import JQuery, as it provides functions you will probably find useful (see https://jquery.com/) -->
     	<script src="https://code.jquery.com/jquery-2.1.1.js"></script>
@@ -20,26 +20,60 @@
 
 	</head>
 
-    <body onload="initalize()"> <!-- Call the initalize method when the page loads -->
+    	<body> <!-- Call the initalize method when the page loads -->
     	
     	<div class="container">
 
 			<!-- Add your HTML Here -->
+			<div class="navs">
+				<div class="container">
+					<div class="nav-header">
+						<span class="nav-brand" style="color:#fff">Top Trumps Game</span>
+					</div><!--
+        <div id="navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#contact">Contact</a></li>
+          </ul>
+        </div>--><!--/.nav-collapse -->
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-6">
+					<div class="card">
+						<h5 class="card-header">New Game</h5>
+						<div class="card-body">
+							<p class="card-text">Start a new Top Trumps Game</p>
+							<a href="/toptrumps/game" class="btn btn-primary">Go</a>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="card">
+						<h5 class="card-header">Game Statistics</h5>
+						<div class="card-body">
+							<p class="card-text">Get Statistics from past Games</p>
+							<a href="/toptrumps/stats" class="btn btn-primary">Go</a>
+						</div>
+					</div>
+				</div>
+			</div>
 		
 		</div>
 		
 		<script type="text/javascript">
 		
 			// Method that is called on page load
-			function initalize() {
+			//function initalize() {
 			
 				// --------------------------------------------------------------------------
 				// You can call other methods you want to run when the page first loads here
 				// --------------------------------------------------------------------------
 				
 				// For example, lets call our sample methods
-				helloJSONList();
-				helloWord("Student");
+				//helloJSONList();
+				//helloWord("Student");
 				
 			}
 			
