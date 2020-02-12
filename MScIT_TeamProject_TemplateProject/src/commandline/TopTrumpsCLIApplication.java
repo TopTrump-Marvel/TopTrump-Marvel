@@ -185,6 +185,22 @@ public class TopTrumpsCLIApplication {
 		fos.flush();
 	}
 
+	public static void recoedLog(FileOutputStream fos, String user, String[] card) throws IOException{
+		String str = "";
+		for(int i=1;i<attrs.length;i++){
+			str+=attrs[i]+": "+card[i];
+		}
+		fos.write((user+"'s Card used: "+card[0]+str).getBytes());
+		fos.write("\r\n----------\r\n".getBytes());
+		fos.flush();
+	}
+	/**
+	 * This main method is called by TopTrumps.java when the user specifies that they want to run in
+	 * command line mode. The contents of args[0] is whether we should write game logs to a file.
+	 * @param args
+	 * @throws IOException
+	 */
+
 	public static void main(String[] args) {
 
 		boolean writeGameLogsToFile = false; // Should we write game logs to file?
@@ -192,17 +208,18 @@ public class TopTrumpsCLIApplication {
 		
 		// State
 		boolean userWantsToQuit = false; // flag to check whether the user wants to quit the application
-		
+		/*
 		// Loop until the user wants to exit the game
 		while (!userWantsToQuit) {
 
 			// ----------------------------------------------------
 			// Add your game logic here based on the requirements
 			// ----------------------------------------------------
-			
+
 			userWantsToQuit=true; // use this when the user wants to exit the game
-			
+
 		}
+		*/
 
 
 	}
