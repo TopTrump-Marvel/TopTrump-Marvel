@@ -1,7 +1,9 @@
 package commandline;
 
 import java.io.*;
+import java.math.*;
 import java.util.*;
+import game.gamePlay;
 
 /**
  * Top Trumps command line application
@@ -23,6 +25,10 @@ public class TopTrumpsCLIApplication {
 	static int isai=0;
 	static int end = 0;
 	static List commonCards = new ArrayList();
+	static int com;
+	static int lastwin;
+	static int draw=0;
+	static String realcard[][];
 
 	/**
 	 * This main method is called by TopTrumps.java when the user specifies that they want to run in
@@ -194,6 +200,9 @@ public class TopTrumpsCLIApplication {
 		fos.write("\r\n----------\r\n".getBytes());
 		fos.flush();
 	}
+
+
+
 	/**
 	 * This main method is called by TopTrumps.java when the user specifies that they want to run in
 	 * command line mode. The contents of args[0] is whether we should write game logs to a file.
@@ -205,7 +214,8 @@ public class TopTrumpsCLIApplication {
 
 		boolean writeGameLogsToFile = false; // Should we write game logs to file?
 		if (args[0].equalsIgnoreCase("true")) writeGameLogsToFile=true; // Command line selection
-		
+		File logfile;
+		log = writeGameLogsToFile;
 		// State
 		boolean userWantsToQuit = false; // flag to check whether the user wants to quit the application
 		/*
@@ -221,7 +231,185 @@ public class TopTrumpsCLIApplication {
 		}
 		*/
 
+		try {
+			getCards();
+			if(writeGameLogsToFile){
+				logfile = new File("toptrumps.log");
 
+				fos = new FileOutputStream(logfile);
+
+				/* test if exists or delete it. */
+				logfile.delete();
+				if (!logfile.exists()) {
+					logfile.createNewFile();
+				}
+				fos.write("All cards\r\n".getBytes());
+				StringBuffer sBuffer = new StringBuffer("");
+				for(int i=0;i<arrs.size();i++){
+					sBuffer.append(arrs.get(i)[0]+" ");
+					if(i%4==0){
+						sBuffer.append("\r\n");
+					}
+
+				}
+
+				byte[] bytesArray = sBuffer.toString().getBytes();
+
+				fos.write(bytesArray);
+				fos.write("\r\n----------\r\n".getBytes());
+				fos.flush();
+			}
+
+			num=0;
+			num = arrs.keySet().size();
+
+			com  = num%(allplayer);
+			pernum = (num-com)/allplayer;
+
+			int round=1;
+			int nowround;
+			int score[];
+			int attr_index=0;
+			String now_arr[];
+			score = new int[allplayer];
+			while(true){
+				menu();
+				Scanner sc = new Scanner(System.in);
+				int opt = sc.nextInt();
+				if( opt == 1 ){
+					int[] data = game.gamePlay.get();
+					print("Number of Games: "+data[0]);
+					print("Number of Human wins: "+data[1]);
+					print("Number of AI Wins: "+data[2]);
+					print("Average Draws per game: "+data[3]);
+					print("Longest Game: "+data[4]);
+					continue;
+				}else{
+					end = 0;
+					draw = 0;
+					players = new HashMap<Integer,String>();
+					players.put(0,"You");
+					score[0]=0;
+					round=1;
+					for(int pa=1;pa<=aiplayers;pa++){
+						players.put(pa,"AI Players "+pa);
+						score[pa]=0; //all players never have won
+					}
+					nowround  = (int) Math.floor(Math.random()*players.size());
+					print("Game Start");
+					//
+					shuffle(); // get new cards
+					if(writeGameLogsToFile){
+						StringBuffer aBuffer = new StringBuffer("");
+						for(int i=0;i<players.size();i++){
+							fos.write((players.get(i)+"\r\n").getBytes());
+							aBuffer = new StringBuffer("");
+							for(int j=0;j<cards[i].size();j++){
+								aBuffer.append(arrs.get(cards[i].get(j))[0]+" ");
+								if(j%4==0){
+									aBuffer.append("\r\n");
+								}
+							}
+							byte[] bytesArray;// = aBuffer.toString().getBytes();
+							bytesArray = aBuffer.toString().getBytes();
+							fos.write(bytesArray);
+							fos.write("\r\n----------\r\n".getBytes());
+						}
+						fos.flush();
+					}
+					while(end!=1){
+						print("Round "+round);
+						print("Round "+round+": Players have drawn their cards");
+						if(cards[0].size()==0){
+							print("You have Lost!");
+						}else{
+							now_arr = arrs.get(cards[0].get(0));
+							print("You drew '"+now_arr[0]+"':");
+							for(attr_index=1;attr_index<attrs.length;attr_index++){
+								print("   > "+attrs[attr_index]+": "+now_arr[attr_index]);
+							}
+							print("There are '"+(cards[0].size()-1)+" cards in your deck");
+						}
+						if(writeGameLogsToFile){
+							for(int i=0;i<players.size();i++){
+								if(cards[i].size()>0){
+									fos.write((players.get(i)+"'s Crad Playing:"+arrs.get(cards[i].get(0))[0]+"\r\n").getBytes());
+									fos.write("\r\n----------\r\n".getBytes());
+								}
+							}
+							fos.flush();
+						}
+						int choose = showChoose(sc,nowround);
+						if(writeGameLogsToFile){
+							if(cards[nowround].size()>0){
+								fos.write((players.get(nowround)+"'s category selected: "+attrs[choose]+"\r\n"
+										+"corresponding values: "+arrs.get(cards[nowround].get(0))[choose]+"\r\n").getBytes());
+								fos.write("\r\n----------\r\n".getBytes());
+							}
+
+							fos.flush();
+						}
+						int winner = getWinner(choose);
+						if(winner <666){
+							lastwin = (Integer) cards[winner].get(0);
+							score[winner]++;
+						}
+						for(int ci = 0;ci<allplayer;ci++){
+							if(cards[ci].size()>0){
+								commonCards.add(cards[ci].get(0));
+								if(writeGameLogsToFile){
+									commonLog(fos);
+									recoedLog(fos,players.get(ci),arrs.get(cards[ci].get(0)));
+								}
+								cards[ci].remove(0);
+							}else{
+								continue;
+							}
+						}
+
+						if(winner == 666){
+							draw++;
+							nowround = isai==1?getrand():(cards[0].size()>0?0:getrand());
+							//commonCards.add("");
+							print("Round "+round+": This round was a Draw, common pile now has "+commonCards.size()+" cards");
+							//print(commonCards.toString());
+						}else{
+							nowround = winner;
+							for(int ci=0;ci<commonCards.size();ci++){
+								cards[winner].add(commonCards.get(ci));
+							}
+							commonCards = new ArrayList();
+
+							print("Round "+round+": Player "+players.get(winner)+" won this round");
+							print("The winning card was '"+arrs.get(lastwin)[0]+"':");
+							for(int ij=1;ij<attrs.length;ij++){
+								print("   > "+attrs[ij]+": "+arrs.get(lastwin)[ij]+" "+(ij==choose?"<--":""));
+							}
+						}
+
+						round++;
+
+					}
+					print("Game End");
+					print("The overall winnder was "+players.get(lastwin));
+					gamePlay.update(true, score, draw, round, lastwin);
+					if(writeGameLogsToFile){
+						StringBuffer aBuffer = new StringBuffer("");
+						fos.write(("The last winner is: "+players.get(lastwin)).getBytes());
+						fos.write("\r\n----------\r\n".getBytes());
+						fos.flush();
+					}
+					print("Scores:");
+					for(int i=0;i<score.length;i++){
+						print("   "+players.get(i)+": "+score[i]);
+					}
+					continue;
+				}
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			System.out.println("Where is StarCitizenDeck.txt?");
+			e.printStackTrace();
+		}
 	}
-
 }
