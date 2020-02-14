@@ -17,6 +17,43 @@
     	<link rel="stylesheet" href="http://dcs.gla.ac.uk/~richardm/assets/stylesheets/vex-theme-os.css"/>
     	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+		<style>
+			body{
+				width: 100%;
+				height: 100vh;
+				background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+				background-size: 400% 400%;
+				animation: gradientBG 15s ease infinite;
+			}
+
+
+			@keyframes gradientBG {
+				0% {
+					background-position: 0% 50%;
+				}
+				50% {
+					background-position: 100% 50%;
+				}
+				100% {
+					background-position: 0% 50%;
+				}
+			}
+			.navs{
+				background-color: black;
+				padding-top: 10px;
+				padding-bottom: 10px;
+			}
+			.mb{
+				margin-bottom: 20px
+			}
+			.card{
+				padding:0!important;
+				height:360px
+			}
+			.card-body {
+				padding: 1rem;
+			}
+		</style>
 
 	</head>
 
