@@ -9,10 +9,10 @@ public class gameCard {
         //Map<String, String[][]> map = new HashMap<String, String[][]>();
         //StringBuilder result = new StringBuilder();
         try{
-            BufferedReader br = new BufferedReader(new FileReader(file));//����һ��BufferedReader������ȡ�ļ�
+            BufferedReader br = new BufferedReader(new FileReader(file));//Construct a BufferedReader class to read the file
             String s = null;
             int i = 0;
-            while((s = br.readLine())!=null){//ʹ��readLine������һ�ζ�һ��
+            while((s = br.readLine())!=null){//Use the readLine method to read one line at a time
                 if(i==0){
                     attrs = s.split("	");
                 }else{

@@ -10,7 +10,7 @@ public class gameLog {
     static File logfile;
 
     /**
-     * @param args
+     *
      * @throws IOException
      */
     public static void init() throws IOException {

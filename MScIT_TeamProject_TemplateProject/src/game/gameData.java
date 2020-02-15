@@ -12,7 +12,7 @@ public class gameData {
     static final String USER = "CT";
     static final String PASS = "CT";
     /**
-     * @param args
+     *
      */
     public static int[] get(){
         Connection conn = null;
