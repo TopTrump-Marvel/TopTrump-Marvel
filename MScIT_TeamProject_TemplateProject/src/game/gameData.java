@@ -4,13 +4,13 @@ import java.sql.*;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.StringUtils;
-public class gamePlay {
+public class gameData {
 
-    static final  String JDBC_DRIVER = "com.mysql.jdbc.Driver";
-    static final String DB_URL = "jdbc:mysql://47.240.19.18:3306/toptrumps";
+    static final  String JDBC_DRIVER = "org.postgresql.Driver";
+    static final String DB_URL = "jdbc:postgresql://52.24.215.108:5432/CT";
     // username and password of database
-    static final String USER = "toptrumps";
-    static final String PASS = "RXRcZSesH2fetbS8";
+    static final String USER = "CT";
+    static final String PASS = "CT";
     /**
      * @param args
      */
@@ -36,7 +36,7 @@ public class gamePlay {
             // Execute query
             //System.out.println("instantiating a statement object...");
 
-            sql = "SELECT count(id) as total FROM gamedata";
+            sql = "SELECT count(id) as total FROM gamedatas";
             rs = stmt.executeQuery(sql);
             // expand database result set
             while(rs.next()) {
@@ -45,7 +45,7 @@ public class gamePlay {
                 rs.close();
                 break;
             }
-            sql = "SELECT max(rounds) as rounds FROM gamedata";
+            sql = "SELECT max(rounds) as rounds FROM gamedatas";
             rs = stmt.executeQuery(sql);
             // expand database result set
             while(rs.next()) {
@@ -54,7 +54,7 @@ public class gamePlay {
                 rs.close();
                 break;
             }
-            sql = "SELECT sum(player0) as human FROM gamedata";
+            sql = "SELECT sum(player0) as human FROM gamedatas";
             rs = stmt.executeQuery(sql);
             // expand database result set
             while(rs.next()){
@@ -63,7 +63,7 @@ public class gamePlay {
                 rs.close();
                 break;
             }
-            sql = "SELECT sum(player1)+sum(player2)+sum(player3)+sum(player4) as ai FROM gamedata";
+            sql = "SELECT sum(player1)+sum(player2)+sum(player3)+sum(player4) as ai FROM gamedatas";
             rs = stmt.executeQuery(sql);
             // expand database result set
             while(rs.next()){
@@ -72,7 +72,7 @@ public class gamePlay {
                 rs.close();
                 break;
             }
-            sql = "SELECT sum(draws)/count(id) as draws FROM gamedata";
+            sql = "SELECT sum(draws)/count(id) as draws FROM gamedatas";
             rs = stmt.executeQuery(sql);
             // expand database result set
             while(rs.next()){
@@ -129,7 +129,7 @@ public class gamePlay {
                 // execute query
                 //System.out.println("instantiating a statement object...");
 
-                sql = "SELECT id FROM gamedata order by id desc limit 1";
+                sql = "SELECT id FROM gamedatas order by id desc limit 1";
                 rs = stmt.executeQuery(sql);
 
                 // expand database result set
@@ -144,7 +144,7 @@ public class gamePlay {
                         value[i] = "player"+i+"="+score[i];
                     }
                     str = StringUtils.join(value,",");
-                    sql = "update gamedata set rounds='"+rounds+"',draws='"+draw+"',winner='"+winner+"',"+str+" where id='"+id+"'";
+                    sql = "update gamedatas set rounds='"+rounds+"',draws='"+draw+"',winner='"+winner+"',"+str+" where id='"+id+"'";
                     stmt.executeUpdate(sql);
                     // Output Data
                 /*System.out.print("ID: " + id);
@@ -158,15 +158,20 @@ public class gamePlay {
                 // close when done
             }else{
                 String str;
-                String valuea[] = new String[score.length];
-                String value[] = new String[score.length];
+                String valuea[] = new String[5];
+                String value[] = new String[5];
                 for(int i=0;i<score.length;i++){
                     valuea[i] = "player"+i;//+"="+score[i];
                     value[i] = score[i]+"";
                 }
+                for(int j=score.length;j<5;j++){
+                    valuea[j] = "player"+j;
+                    value[j] = 0+"";
+                }
                 String stra = StringUtils.join(valuea,",");
                 str = StringUtils.join(value,",");
                 sql = "insert into gamedata (rounds,draws,winner,"+stra+") VALUES ("+rounds+","+draw+",'"+winner+"',"+str+")";
+                //System.out.println(sql);
                 stmt.executeUpdate(sql);
             }
             stmt.close();

@@ -1,9 +1,8 @@
 package commandline;
 
 import java.io.*;
-import java.math.*;
 import java.util.*;
-import game.gamePlay;
+import game.gameData;
 
 /**
  * Top Trumps command line application
@@ -277,7 +276,7 @@ public class TopTrumpsCLIApplication {
 				Scanner sc = new Scanner(System.in);
 				int opt = sc.nextInt();
 				if( opt == 1 ){
-					int[] data = game.gamePlay.get();
+					int[] data = gameData.get();
 					print("Number of Games: "+data[0]);
 					print("Number of Human wins: "+data[1]);
 					print("Number of AI Wins: "+data[2]);
@@ -392,7 +391,7 @@ public class TopTrumpsCLIApplication {
 					}
 					print("Game End");
 					print("The overall winnder was "+players.get(lastwin));
-					gamePlay.update(true, score, draw, round, lastwin);
+					gameData.update(true, score, draw, round, lastwin);
 					if(writeGameLogsToFile){
 						StringBuffer aBuffer = new StringBuffer("");
 						fos.write(("The last winner is: "+players.get(lastwin)).getBytes());
