@@ -1,68 +1,42 @@
 package commandline;
-
 import java.io.*;
+import java.math.*;
 import java.util.*;
-import game.gameData;
 
+import game.gameCard;
+import game.gameData;
+import game.gameLog;
+import game.gameRule;
+//import pk1.loadCard;
 /**
  * Top Trumps command line application
  */
 public class TopTrumpsCLIApplication {
 
-
-	static Map<Integer,String[]> arrs=new HashMap<Integer,String[]>();
-	static String attrs[];
+	//static Map <Integer,String[]> arrs=new HashMap<Integer,String[]>();
+	static String realcard[][];
+	//static String attrs[];
 	static int num = 0;
 	static int aiplayers = 4;
 	static int allplayer = aiplayers+1;
-	static List indexes = new ArrayList();
-	static ArrayList[] cards = new ArrayList[allplayer];
-	static boolean log = false;
-	static FileOutputStream fos = null;
-	static int pernum;
-	static Map <Integer, String> players=new HashMap<Integer, String>();
-	static int isai=0;
-	static int end = 0;
-	static List commonCards = new ArrayList();
+	//static int cards[][];
+	//static ArrayList[] cards;// = new ArrayList[allplayer];
+	static Map <Integer,String> players=new HashMap<Integer,String>();
+	//static List commonCards = new ArrayList();
+	//static List indexes = new ArrayList();
 	static int com;
+	static int pernum;
 	static int lastwin;
+	static int isai=0;
+	//static int end=0;
 	static int draw=0;
-	static String realcard[][];
-
-	/**
-	 * This main method is called by TopTrumps.java when the user specifies that they want to run in
-	 * command line mode. The contents of args[0] is whether we should write game logs to a file.
-	 */
-
-	public static void txt2String(File file) {
-
-		try {
-			BufferedReader br = new BufferedReader(new FileReader(file));
-			String s = null;
-			int i = 0;
-			while ((s = br.readLine()) != null) {
-				if (i == 0) {
-					attrs = s.split("	");
-				} else {
-					String[] tmp = s.split("	");
-
-					arrs.put(i - 1, tmp);
-
-				}
-				i++;
-			}
-			br.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	public static void getCards() throws Exception{
-		File file = new File("StarCitizenDeck.txt");
-		txt2String(file);
-		return;
-	}
-
+	static boolean log = false;
+	/*
+	public static int getRand(int leng){
+		return (int) Math.floor(Math.random()*leng);
+	}*/
 	public static void menu(){
+
 		System.out.println("Do you want to see past results or play a game?");
 		System.out.println("   1: Print Game Statistics");
 		System.out.println("   2: Play game");
@@ -70,150 +44,64 @@ public class TopTrumpsCLIApplication {
 	public static void print(String str){
 		System.out.println(str);
 	}
-
-	public static void shuffle() throws IOException {
-
-		for(int a=0;a<num;a++){
-			indexes.add(a);
-		}
-
-		for (int i = 0; i < allplayer; i++) {
-			cards[i] = new ArrayList<Integer>();
-		}
-		Collections.shuffle(indexes);
-		Collections.shuffle(indexes);
-
-		if(log){
-			fos.write("Shuffled cards\r\n".getBytes());
-			StringBuffer aBuffer = new StringBuffer("");
-			for(int i =0; i<indexes.size();i++){
-				aBuffer.append(arrs.get(indexes.get(i))[0]+" ");
-				if(i>0 && i%4==0){
-					aBuffer.append("\r\n");
-				}
-			}
-			byte[] bytesArray = aBuffer.toString().getBytes();
-			fos.write(bytesArray);
-			fos.write("\r\n----------\r\n".getBytes());
-		}
-		for(int i=0;i<allplayer;i++){
-			for(int j=0;j<pernum;j++){
-				int a;
-				try{
-					a = (Integer) indexes.get(1);
-				}catch(Exception e){
-					a = (Integer) indexes.get(0);
-				}
-				cards[i].add(a);
-				//System.out.println(a);
-				try{
-					indexes.remove(1);
-				}catch(Exception e){
-					indexes.remove(0);
-				}
-			}
-		}
-	}
-
 	public static int showChoose(Scanner sc, int nowround){
 		int choose = 1;
 		if(nowround==0){
+			//me
 			print("It is your turn to select a category, the categories are:");
-			for(int i=1;i<attrs.length;i++){
-				print(" "+i+": "+attrs[i]);
+			for(int i=1;i<gameCard.attrSize();i++){
+				print("   "+i+": "+gameCard.attrGet(i));
 			}
 			System.out.print("Enter the number for your attribute: ");
 			choose = sc.nextInt();
 		}else{
-			String[] data = arrs.get(cards[nowround].get(0));
-			int max = 0;
-			choose = 1;
-			for(int i=1;i<data.length;i++){
-				if(Integer.parseInt(data[i])>=max){
-					max = Integer.parseInt(data[i]);
-					choose=i;
-				}
-			}
+			choose = gameRule.showChoose(nowround);
 		}
-		choose = choose>attrs.length? 1:choose;
+		choose = choose>gameCard.attrSize()?1:choose;
 		return choose;
 	}
-	public static int getWinner(int choose){
-		int winner = 666;
-		int max = 0;
-		int token=0;
-		for(int i=0;i<players.size();i++){
-			if(cards[i].size()>0){
-				String[] data = arrs.get(cards[i].get(0));
-				int value = Integer.parseInt(data[choose]);
-
-				if(value == max){
-					winner = 666;
-					isai = i>0? 1:0;
-				}
-				if(value > max){
-					winner = i;
-					max = value;
-				}
-				token++;
-			}
-		}
-		end = token ==1? 1:0;
-		return winner;
-	}
-
+	/*
 	public static int getrand(){
 		int rand = 0;
-		List alive = new ArrayList();
-		for(int i=0;i<players.size();i++){
-			if(cards[i].size()>0){
-				alive.add(i);
-			}
+		while(rand>0){
+			rand = (int) Math.floor(Math.random()*players.size());
 		}
-		Collections.shuffle(alive);
-		Collections.shuffle(alive);
-		rand = (Integer)alive.get(0);
 		return rand;
-	}
+	}*/
+	public static void commonLog() throws IOException{
 
-	public static void commonLog(FileOutputStream fos) throws IOException{
-		StringBuffer aBuffer = new StringBuffer("");
-		for(int i=0;i<commonCards.size();i++){
-			aBuffer.append(arrs.get(commonCards.get(i))[0]+" ");
+		gameLog.write("Common cards have:\r\n");
+		//StringBuffer aBuffer = new StringBuffer("");
+		for(int i =0; i<gameRule.commonCards.size();i++){
+			//aBuffer.append(gameCard.get(gameRule.commonCards.get(i))[0]+" ");
+			gameLog.write(gameCard.get(gameRule.commonCards.get(i))[0]);
 			if(i%4==0){
-				aBuffer.append("\r\n");
+				gameLog.write("\r\n");
+				//	aBuffer.append("\r\n");
 			}
 		}
-		byte[] bytesArray = aBuffer.toString().getBytes();
-		fos.write(bytesArray);
-		fos.write("\r\n------------\r\n".getBytes());
-		fos.flush();
+		//gameLog.write(aBuffer.toString());
+		gameLog.write("\r\n----------\r\n");
 	}
-
-	public static void recoedLog(FileOutputStream fos, String user, String[] card) throws IOException{
+	public static void recoedLog(String user, String[] card) throws IOException{
 		String str = "";
-		for(int i=1;i<attrs.length;i++){
-			str+=attrs[i]+": "+card[i];
+		for(int i=1;i<gameCard.attrSize();i++){
+			str+=gameCard.attrGet(i)+": "+card[i]+"\r\n";
 		}
-		fos.write((user+"'s Card used: "+card[0]+str).getBytes());
-		fos.write("\r\n----------\r\n".getBytes());
-		fos.flush();
+		gameLog.write(user+"'s Card used: "+card[0]+str);
+		gameLog.write("\r\n----------\r\n");
 	}
-
-
-
 	/**
 	 * This main method is called by TopTrumps.java when the user specifies that they want to run in
 	 * command line mode. The contents of args[0] is whether we should write game logs to a file.
 	 * @param args
 	 * @throws IOException
 	 */
-
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 
 		boolean writeGameLogsToFile = false; // Should we write game logs to file?
 		if (args[0].equalsIgnoreCase("true")) writeGameLogsToFile=true; // Command line selection
-		File logfile;
+
 		log = writeGameLogsToFile;
 		// State
 		boolean userWantsToQuit = false; // flag to check whether the user wants to quit the application
@@ -229,46 +117,71 @@ public class TopTrumpsCLIApplication {
 
 		}
 		*/
-
 		try {
-			getCards();
+
+			gameCard.load("StarCitizenDeck.txt");
+			//arrs =
+			gameCard.getCards();
+			//attrs =
+			gameCard.getAttrs();
 			if(writeGameLogsToFile){
-				logfile = new File("toptrumps.log");
-
-				fos = new FileOutputStream(logfile);
-
-				/* test if exists or delete it. */
-				logfile.delete();
-				if (!logfile.exists()) {
-					logfile.createNewFile();
-				}
-				fos.write("All cards\r\n".getBytes());
+				gameLog.init();
+				gameLog.write("All cards\r\n");
 				StringBuffer sBuffer = new StringBuffer("");
-				for(int i=0;i<arrs.size();i++){
-					sBuffer.append(arrs.get(i)[0]+" ");
-					if(i%4==0){
+				for(int i=0;i<gameCard.size();i++){
+					sBuffer.append(gameCard.get(i)[0]+" ");
+					if(i%4==0 && i!=0){
 						sBuffer.append("\r\n");
 					}
 
 				}
-
-				byte[] bytesArray = sBuffer.toString().getBytes();
-
-				fos.write(bytesArray);
-				fos.write("\r\n----------\r\n".getBytes());
-				fos.flush();
+				gameLog.write(sBuffer.toString());
+				gameLog.write("\r\n----------\r\n");
 			}
 
 			num=0;
-			num = arrs.keySet().size();
-
-			com  = num%(allplayer);
-			pernum = (num-com)/allplayer;
-
+			num = gameCard.keySize();
+			/*
+			for(String[] v:arrs){
+				if(v[0] == null){
+					break;
+				}
+				indexes.add(num);
+				num++;
+				for(String vv:v){
+					System.out.println(vv);
+				}
+			}
+			realcard = new String[num][gameCard.attrSize()];
+			num=0;
+		    //  indexes = new int[num];
+			for(String[] v:arrs){
+				if(v[0] == null){
+					break;
+				}
+				realcard[num]=v;
+				num++;
+			}*/
+			gameRule.init(aiplayers,num,log);
+			//cards = new int[allplayer][num];
+			//System.out.println("Total"+num);
+			//System.out.println("Common pil"+com);
+			//System.out.println("nums:"+gameCard.attrSize());
+		    /*
+			for(int i=0;i<allplayer;i++){
+				for(int j=0;j<cards[i].size();j++){
+					String a = cards[i].get(j).toString();
+					//System.out.println(gameCard.get(a)[0]);
+				}
+			}*/
+			//System.out.println("--------------------");
+			//System.out.println("--- Top Trumps   ---");
+			//System.out.println("--------------------");
 			int round=1;
 			int nowround;
 			int score[];
 			int attr_index=0;
+			int winner = 0;
 			String now_arr[];
 			score = new int[allplayer];
 			while(true){
@@ -276,7 +189,8 @@ public class TopTrumpsCLIApplication {
 				Scanner sc = new Scanner(System.in);
 				int opt = sc.nextInt();
 				if( opt == 1 ){
-					int[] data = gameData.get();
+					int[] data = game.gameData.get();
+					//print(" static ");
 					print("Number of Games: "+data[0]);
 					print("Number of Human wins: "+data[1]);
 					print("Number of AI Wins: "+data[2]);
@@ -284,7 +198,7 @@ public class TopTrumpsCLIApplication {
 					print("Longest Game: "+data[4]);
 					continue;
 				}else{
-					end = 0;
+					gameRule.end = 0;
 					draw = 0;
 					players = new HashMap<Integer,String>();
 					players.put(0,"You");
@@ -294,109 +208,124 @@ public class TopTrumpsCLIApplication {
 						players.put(pa,"AI Players "+pa);
 						score[pa]=0; //all players never have won
 					}
-					nowround  = (int) Math.floor(Math.random()*players.size());
+					nowround = (int) Math.floor(Math.random()*players.size());
+					gameRule.init(aiplayers, num, log);
+					gameRule.commonCards = new ArrayList();
 					print("Game Start");
 					//
-					shuffle(); // get new cards
+					//gameRule.cards =
+					gameRule.shuffle(); // get new cards
 					if(writeGameLogsToFile){
 						StringBuffer aBuffer = new StringBuffer("");
 						for(int i=0;i<players.size();i++){
-							fos.write((players.get(i)+"\r\n").getBytes());
+							gameLog.write(players.get(i)+"\r\n");
 							aBuffer = new StringBuffer("");
-							for(int j=0;j<cards[i].size();j++){
-								aBuffer.append(arrs.get(cards[i].get(j))[0]+" ");
+							for(int j=0;j<gameRule.cards[i].size();j++){
+								aBuffer.append(gameCard.get(gameRule.cards[i].get(j))[0]+" ");
 								if(j%4==0){
 									aBuffer.append("\r\n");
 								}
 							}
 							byte[] bytesArray;// = aBuffer.toString().getBytes();
-							bytesArray = aBuffer.toString().getBytes();
-							fos.write(bytesArray);
-							fos.write("\r\n----------\r\n".getBytes());
+							gameLog.write(aBuffer.toString());
+							gameLog.write("\r\n----------\r\n");
 						}
-						fos.flush();
 					}
-					while(end!=1){
+					while(gameRule.end!=1){
 						print("Round "+round);
 						print("Round "+round+": Players have drawn their cards");
-						if(cards[0].size()==0){
+						if(gameRule.cards[0].size()==0){
 							print("You have Lost!");
 						}else{
-							now_arr = arrs.get(cards[0].get(0));
+							now_arr = gameCard.get(gameRule.cards[0].get(0));
 							print("You drew '"+now_arr[0]+"':");
-							for(attr_index=1;attr_index<attrs.length;attr_index++){
-								print("   > "+attrs[attr_index]+": "+now_arr[attr_index]);
+							for(attr_index=1;attr_index<gameCard.attrSize();attr_index++){
+								print("   > "+gameCard.attrGet(attr_index)+": "+now_arr[attr_index]);
 							}
-							print("There are '"+(cards[0].size()-1)+" cards in your deck");
+							print("There are '"+(gameRule.cards[0].size()-1)+" cards in your deck");
 						}
 						if(writeGameLogsToFile){
 							for(int i=0;i<players.size();i++){
-								if(cards[i].size()>0){
-									fos.write((players.get(i)+"'s Crad Playing:"+arrs.get(cards[i].get(0))[0]+"\r\n").getBytes());
-									fos.write("\r\n----------\r\n".getBytes());
+								if(gameRule.cards[i].size()>0){
+									gameLog.write(players.get(i)+"'s Crad Playing:"+gameCard.get(gameRule.cards[i].get(0))[0]+"\r\n");
+									gameLog.write("\r\n----------\r\n");
 								}
 							}
-							fos.flush();
 						}
+					/*
+					for(int i=0;i < gameRule.cards.length;i++){
+						//for(int j=0;j<cards[nowround].size())
+						print("this is "+i+", he has "+(gameRule.cards[i].size()));
+					}*/
+						//print("now round is"+nowround);
+						//print("size is :"+gameRule.cards[nowround].size());
 						int choose = showChoose(sc,nowround);
 						if(writeGameLogsToFile){
-							if(cards[nowround].size()>0){
-								fos.write((players.get(nowround)+"'s category selected: "+attrs[choose]+"\r\n"
-										+"corresponding values: "+arrs.get(cards[nowround].get(0))[choose]+"\r\n").getBytes());
-								fos.write("\r\n----------\r\n".getBytes());
+							if(gameRule.cards[nowround].size()>0){
+								gameLog.write((players.get(nowround)+"'s category selected: "+gameCard.attrGet(choose)+"\r\n"
+										+"corresponding values: "+gameCard.get(gameRule.cards[nowround].get(0))[choose]+"\r\n"));
+								gameLog.write("\r\n----------\r\n");
 							}
 
-							fos.flush();
 						}
-						int winner = getWinner(choose);
+						winner = gameRule.getWinner(choose);
 						if(winner <666){
-							lastwin = (Integer) cards[winner].get(0);
+							lastwin = (Integer) gameRule.cards[winner].get(0);
 							score[winner]++;
+						}else{
+							nowround = gameRule.getrand(choose);
 						}
 						for(int ci = 0;ci<allplayer;ci++){
-							if(cards[ci].size()>0){
-								commonCards.add(cards[ci].get(0));
+							if(gameRule.cards[ci].size()>0){
+								gameRule.commonCards.add(gameRule.cards[ci].get(0));
 								if(writeGameLogsToFile){
-									commonLog(fos);
-									recoedLog(fos,players.get(ci),arrs.get(cards[ci].get(0)));
+									recoedLog(players.get(ci),gameCard.get(gameRule.cards[ci].get(0)));
 								}
-								cards[ci].remove(0);
+								gameRule.cards[ci].remove(0);
 							}else{
 								continue;
 							}
 						}
-
 						if(winner == 666){
-							draw++;
-							nowround = isai==1?getrand():(cards[0].size()>0?0:getrand());
+							draw++;//isai==1?:(cards[0].size()>0?0:gameRule.getrand());
 							//commonCards.add("");
-							print("Round "+round+": This round was a Draw, common pile now has "+commonCards.size()+" cards");
+							print("Round "+round+": This round was a Draw, common pile now has "+gameRule.commonCards.size()+" cards");
 							//print(commonCards.toString());
 						}else{
 							nowround = winner;
-							for(int ci=0;ci<commonCards.size();ci++){
-								cards[winner].add(commonCards.get(ci));
+							for(int ci=0;ci<gameRule.commonCards.size();ci++){
+								gameRule.cards[winner].add(gameRule.commonCards.get(ci));
 							}
-							commonCards = new ArrayList();
-
+							gameRule.commonCards = new ArrayList();
+						/*
+						for(int ci = 0;ci<commonCards.size();ci++){
+							commonCards.remove(0);
+						}*/
 							print("Round "+round+": Player "+players.get(winner)+" won this round");
-							print("The winning card was '"+arrs.get(lastwin)[0]+"':");
-							for(int ij=1;ij<attrs.length;ij++){
-								print("   > "+attrs[ij]+": "+arrs.get(lastwin)[ij]+" "+(ij==choose?"<--":""));
+							print("The winning card was '"+gameCard.get(lastwin)[0]+"':");
+							for(int ij=1;ij<gameCard.attrSize();ij++){
+								print("   > "+gameCard.attrGet(ij)+": "+gameCard.get(lastwin)[ij]+" "+(ij==choose?"<--":""));
 							}
 						}
 
+						if(writeGameLogsToFile){
+							commonLog();
+						}
+						//if(round==1){
+						//	gamePlay.update(true, score, draw, round, winner);
+						//}else{
+						//	gamePlay.update(false, score, draw, round, winner);
+						//}
 						round++;
-
+						//break;
 					}
 					print("Game End");
-					print("The overall winnder was "+players.get(lastwin));
-					gameData.update(true, score, draw, round, lastwin);
+					print("The overall winnder was "+players.get(winner));
+					gameData.update(true, score, draw, round, winner);
 					if(writeGameLogsToFile){
 						StringBuffer aBuffer = new StringBuffer("");
-						fos.write(("The last winner is: "+players.get(lastwin)).getBytes());
-						fos.write("\r\n----------\r\n".getBytes());
-						fos.flush();
+						gameLog.write("The last winner is: "+players.get(winner));
+						gameLog.write("\r\n----------\r\n");
 					}
 					print("Scores:");
 					for(int i=0;i<score.length;i++){
@@ -405,10 +334,13 @@ public class TopTrumpsCLIApplication {
 					continue;
 				}
 			}
+
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			System.out.println("Where is StarCitizenDeck.txt?");
 			e.printStackTrace();
 		}
+
 	}
+
 }
